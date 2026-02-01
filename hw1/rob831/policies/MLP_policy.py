@@ -83,20 +83,12 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         # TODO return the action that the policy prescribes
         tensor_obs = ptu.from_numpy(observation)
         forward_distribution = self.forward(tensor_obs)
-        action = forward_distribution.sample()
+        action = forward_distribution.rsample()
         return ptu.to_numpy(action)
 
     # update/train this policy
     def update(self, observations, actions, **kwargs):
-        output = self.forward(ptu.from_numpy(observations))
-        if self.discrete:
-            loss = F.cross_entropy(output.logits, ptu.from_numpy(actions).long())
-        else:
-            loss = -output.log_prob(ptu.from_numpy(actions)).mean()
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-        return loss
+        raise NotImplementedError
 
     # This function defines the forward pass of the network.
     # You can return anything you want, but you should be able to differentiate
@@ -127,7 +119,8 @@ class MLPPolicySL(MLPPolicy):
     ):
         # TODO: update the policy and return the loss
         output = self.forward(ptu.from_numpy(observations))
-        loss = self.loss(output.mean, ptu.from_numpy(actions))
+        action_output = output.rsample()
+        loss = self.loss(action_output, ptu.from_numpy(actions))
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
