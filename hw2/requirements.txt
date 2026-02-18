@@ -1,4 +1,4 @@
-torch==1.12.1
+torch==2.2.0
 mujoco==2.2.1
 gym[box2d]==0.25.1
 # gym==0.25.1
